@@ -120,7 +120,9 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  */
-// observe方法应该算是Observer的守护，为Observer即将开启前做的一些合规检测
+// observe方法应该算是Observer的守护，为Observer即将开启前做的一些合规检测.
+// 第二个参数指示着被观测的数据对象是否是根数据对象,，什么叫根数据对象呢？
+// 在 src/core/instance/state.js 文件中的initData()函数中
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
     return
@@ -137,6 +139,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   ) {
     ob = new Observer(value)
   }
+  // 可以发现，根数据对象将有用一个特质，即 target.__ob__.vmCount > 0，这样条件 (ob && ob.vmCount) 是成立的，也就是说：当使用 Vue.set/$set 函数为根数据对象添加属性时，是不被允许的。
   if (asRootData && ob) {
     ob.vmCount++
   }
@@ -276,12 +279,15 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     target.splice(key, 1, val)
     return val
   }
-  // 如果 target 不是一个数组，那么必然就是纯对象了，当给一个纯对象设置属性的时候，假设该属性已经在对象上有定义了，那么只需要直接设置该属性的值即可，这将自动触发响应，因为已存在的属性是响应式的。但这里要注意的是 if 语句的两个条件：
+  // 如果 target 不是一个数组，那么必然就是纯对象了，当给一个纯对象设置属性的时候，假设该属性已经在对象上有定义了，那么只需要直接设置该属性的值即可，这将自动触发响应，因为已存在的属性是响应式的。但这里要注意的是 if 语句的两个条件保证了 key 在 target 对象上，或在 target 的原型链上，同时必须不能在 Object.prototype 上。
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
+  // 如果代码运行到了这里，那说明正在给对象添加一个全新的属性
   const ob = (target: any).__ob__
+  //  Vue 实例对象拥有 _isVue 属性，所以当第一个条件成立时，那么说明你正在使用 Vue.set/$set 函数为 Vue 实例对象添加属性，为了避免属性覆盖的情况出现，Vue.set/$set 函数不允许这么做，在非生产环境下会打印警告信息。从observe函数中可以发现，只有根数据才有vmCount>0这一属性.
+  // 为什么不允许在根数据对象上添加属性呢？因为这样做是永远触发不了依赖的。原因就是根数据对象的 Observer 实例收集不到依赖(观察者)，
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -289,11 +295,14 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // target 也许原本就是非响应的，这个时候 target.__ob__是不存在的，所以当发现 target.__ob__ 不存在时，就简单的赋值即可。
   if (!ob) {
     target[key] = val
     return val
   }
+  // 这两个条件保证了 key 在 target 对象上，或在 target 的原型链上，同时必须不能在 Object.prototype 上。
   defineReactive(ob.value, key, val)
+  // 调用了 __ob__.dep.notify() 从而触发响应。这就是添加全新属性触发响应的原理。
   ob.dep.notify()
   return val
 }
@@ -301,6 +310,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
 /**
  * Delete a property and trigger change if necessary.
  */
+// del 函数接收两个参数，分别是将要被删除属性的目标对象 target 以及要删除属性的键名 key
 export function del (target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
@@ -312,6 +322,7 @@ export function del (target: Array<any> | Object, key: any) {
     return
   }
   const ob = (target: any).__ob__
+  // 与不能使用 Vue.set/$set 函数为根数据或 Vue 实例对象添加属性一样，同样不能使用 Vue.delete/$delete 删除 Vue 实例对象或根数据的属性。不允许删除 Vue 实例对象的属性，是出于安全因素的考虑。而不允许删除根数据对象的属性，是因为这样做也是触发不了响应的，关于触发不了响应的原因，我们在讲解 Vue.set/$set 时已经分析过了。
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid deleting properties on a Vue instance or its root $data ' +
@@ -319,6 +330,7 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 首先使用 hasOwn 函数检测 key 是否是 target 对象自身拥有的属性，如果不是那么直接返回(return)。很好理解，如果你将要删除的属性原本就不在该对象上，那么自然什么都不需要做。
   if (!hasOwn(target, key)) {
     return
   }
@@ -326,6 +338,7 @@ export function del (target: Array<any> | Object, key: any) {
   if (!ob) {
     return
   }
+  // 如果 key 存在于 target 对象上，那么代码将继续运行，此时将使用 delete 语句从 target 上删除属性 key。最后判断 ob 对象是否存在，如果不存在说明 target 对象原本就不是响应的，所以直接返回(return)即可。如果 ob 对象存在，说明 target 对象是响应的，需要触发响应才行，即执行 ob.dep.notify()。
   ob.dep.notify()
 }
 

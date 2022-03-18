@@ -181,6 +181,7 @@ function initData (vm: Component) {
   // 检查 methods 对象上的键是否与 data 对象上的键冲突
   // 在 Vue 实例对象上添加代理访问数据对象的同名属性
   // 最后调用 observe 函数开启响应式之路
+  // 可以看到在调用 observe 观测 data 对象的时候 asRootData 参数为 true。而在后续的递归观测中调用 observe 的时候省略了 asRootData 参数。所以所谓的根数据对象就是 data 对象
   observe(data, true /* asRootData */)
 }
 
