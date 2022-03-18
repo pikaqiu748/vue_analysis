@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    <p>{{printMsg}}</p>
+    <p>{{printMsg}}</p>
+    <p>{{test()}}</p>
+    <p>{{test()}}</p>
+    <p>{{msg}}</p>
+    <comp> </comp>
+  </div>
+  <script src='../../dist/vue.js'></script>
+  <script>
+    console.log(window)
+    Vue.component('comp', {
+      template: '<div>i am comp</div>'
+    })
+
+    new Vue({
+      el: '#app',
+      data: {
+        msg: 'hello,vue'
+      },
+      computed: {
+        printMsg: function () {
+          console.log("***************computed")
+          return `${this.msg} computed`
+        }
+      },
+      methods: {
+        test() {
+          console.log('---------methods')
+          return `${this.msg} methods`
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>
