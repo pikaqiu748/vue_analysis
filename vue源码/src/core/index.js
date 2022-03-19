@@ -1,3 +1,4 @@
+// 这说明 runtime/index.js 文件也不是 Vue 构造函数的“出生地”，你应该继续顺藤摸瓜打开 ./instance/index
 import Vue from './instance/index'
 import { initGlobalAPI } from './global-api/index'
 import { isServerRendering } from 'core/util/env'

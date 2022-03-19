@@ -15,7 +15,7 @@ export default class Dep {
   id: number;
   subs: Array<Watcher>;
 
-  constructor () {
+  constructor() {
     this.id = uid++
     this.subs = []
   }
@@ -27,7 +27,7 @@ export default class Dep {
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }
-
+  // 在 dep.depend 方法内部又判断了一次 Dep.target 是否有值，有的同学可能会有疑问，这不是多此一举吗？其实这么做并不多余，因为 dep.depend 方法除了在属性的 get 拦截器函数内被调用之外还在其他地方被调用了，这时候就需要对 Dep.target 做判断，至于在哪里调用的我们后面会讲到。
   depend () {
     // dep.target就是个watcher
     if (Dep.target) {

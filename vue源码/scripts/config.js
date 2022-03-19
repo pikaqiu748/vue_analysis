@@ -120,6 +120,7 @@ const builds = {
     banner
   },
   // Runtime+compiler development build (Browser)
+  // 入口文件为 web/entry-runtime-with-compiler.js，最终输出 dist/vue.js，
   'web-full-dev': {
     entry: resolve('web/entry-runtime-with-compiler.js'),
     dest: resolve('dist/vue.js'),

@@ -1,5 +1,5 @@
 /* @flow */
-
+// 这说明 runtime/index.js 文件也不是 Vue 构造函数的“出生地”，你应该继续顺藤摸瓜打开 core/index.js 文件
 import Vue from 'core/index'
 import config from 'core/config'
 import { extend, noop } from 'shared/util'
@@ -38,6 +38,8 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 首先检测是否传递了 el 选项，如果传递了 el 选项则会接着判断 inBrowser 是否为真，即当前宿主环境是否是浏览器，如果在浏览器中则将 el 透传给 query 函数并用返回值重写 el 变量，否则 el 将被重写为 undefined。
+  // query 函数来自 src/platforms/web/util/index.js 文件，用来根据给定的参数在 DOM 中查找对应的元素并返回。
   el = el && inBrowser ? query(el) : undefined
   return mountComponent(this, el, hydrating)
 }

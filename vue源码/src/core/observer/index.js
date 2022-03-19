@@ -276,10 +276,12 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     // 原理其实很简单，我们知道数组的 splice 变异方法能够完成数组元素的删除、添加、替换等操作。而 target.splice(key, 1, val) 就利用了替换元素的能力，将指定位置元素的值替换为新值，同时由于 splice 方法本身是能够触发响应的，所以一切看起来如此简单。
     target.length = Math.max(target.length, key)
+    // 注意 splice 方法本身是能够触发响应的,
     target.splice(key, 1, val)
     return val
   }
-  // 如果 target 不是一个数组，那么必然就是纯对象了，当给一个纯对象设置属性的时候，假设该属性已经在对象上有定义了，那么只需要直接设置该属性的值即可，这将自动触发响应，因为已存在的属性是响应式的。但这里要注意的是 if 语句的两个条件保证了 key 在 target 对象上，或在 target 的原型链上，同时必须不能在 Object.prototype 上。
+  // 如果 target 不是一个数组，那么必然就是纯对象了，当给一个纯对象设置属性的时候，假设该属性已经在对象上有定义了，那么只需要直接设置该属性的值即可，这将自动触发响应，因为已存在的属性是响应式的。但这里要注意的是 if 语句的两个条件保证了 key 在 target 对象上，或在 target 的原型链上，同时必须不能在 Object.prototype 上
+  // 如果是对象本身的属性，则直接添加即可。
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
@@ -287,7 +289,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   // 如果代码运行到了这里，那说明正在给对象添加一个全新的属性
   const ob = (target: any).__ob__
   //  Vue 实例对象拥有 _isVue 属性，所以当第一个条件成立时，那么说明你正在使用 Vue.set/$set 函数为 Vue 实例对象添加属性，为了避免属性覆盖的情况出现，Vue.set/$set 函数不允许这么做，在非生产环境下会打印警告信息。从observe函数中可以发现，只有根数据才有vmCount>0这一属性.
-  // 为什么不允许在根数据对象上添加属性呢？因为这样做是永远触发不了依赖的。原因就是根数据对象的 Observer 实例收集不到依赖(观察者)，
+  // 为什么不允许在根数据对象上添加属性呢？因为这样做是永远触发不了依赖的。原因就是根数据对象的 Observer 实例收集不到依赖(观察者).即不会直接使用根数据，只会引用里面的数据
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -307,9 +309,8 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   return val
 }
 
-/**
- * Delete a property and trigger change if necessary.
- */
+// Vue 是没有能力拦截到为一个对象(或数组)添加属性(或元素)的，而 Vue.set 和 Vue.delete 就是为了解决这个问题而诞生的。同时为了方便使用 Vue 还在实例对象上定义了 $set 和 $delete 方法，实际上 $set 和 $delete 方法仅仅是 Vue.set 和 Vue.delete 的别名，
+
 // del 函数接收两个参数，分别是将要被删除属性的目标对象 target 以及要删除属性的键名 key
 export function del (target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&

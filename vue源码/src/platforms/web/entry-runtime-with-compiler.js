@@ -3,7 +3,7 @@
 import config from 'core/config'
 import { warn, cached } from 'core/util/index'
 import { mark, measure } from 'core/util/perf'
-
+// 这说明：这个文件并不是 Vue 构造函数的“出生地”，这个文件中的 Vue 是从 ./runtime/index 导入进来的，于是我们就打开当前目录的 runtime 目录下的 index.js 看一下，你同样能够发现这样一句话：
 import Vue from './runtime/index'
 import { query } from './util/index'
 import { compileToFunctions } from './compiler/index'
@@ -14,6 +14,8 @@ const idToTemplate = cached(id => {
   return el && el.innerHTML
 })
 
+// 保留了运行时 $mount 的功能，并在此基础上为 $mount 函数添加了编译模板的能力
+// 首先使用 mount 常量缓存了运行时版的 $mount 函数，然后重新定义了 Vue.prototype.$mount
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
@@ -22,6 +24,7 @@ Vue.prototype.$mount = function (
   el = el && query(el)
 
   /* istanbul ignore if */
+  // <body> 元素和 <html> 元素显然是不能被替换掉的。
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`

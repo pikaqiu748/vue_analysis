@@ -21,7 +21,7 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
-export function setActiveInstance(vm: Component) {
+export function setActiveInstance (vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
   return () => {
@@ -145,6 +145,7 @@ export function mountComponent (
 ): Component {
   vm.$el = el
   if (!vm.$options.render) {
+    // if 条件语句块首先检查渲染函数是否存在，即 vm.$options.render 是否为真，如果不为真说明渲染函数不存在，这时将会执行 if 语句块内的代码，在 if 语句块内首先将 vm.$options.render 的值设置为 createEmptyVNode 函数，也就是说此时渲染函数的作用将仅仅渲染一个空的 vnode 对象
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
@@ -164,10 +165,13 @@ export function mountComponent (
       }
     }
   }
+  // 在触发 beforeMount 生命周期钩子之后，组件将开始挂载工作，
   callHook(vm, 'beforeMount')
 
+  // 定义并初始化 updateComponent 函数，这个函数将用作创建 Watcher 实例时传递给 Watcher 构造函数的第二个参数
   let updateComponent
   /* istanbul ignore if */
+  // 在满足该条件的情况下会做一些性能统计，可以看到在 if 语句块中分别统计了 vm._render() 函数以及 vm._update() 函数的运行性能。也就是说无论是执行 if 语句块还是执行 else 语句块，最终 updateComponent 函数的功能是不变的。
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     updateComponent = () => {
       const name = vm._name
@@ -186,6 +190,10 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
+    // 我们可以简单地认为：
+    // vm._render 函数的作用是调用 vm.$options.render 函数并返回生成的虚拟节点(vnode)
+    // vm._update 函数的作用是把 vm._render 函数生成的虚拟节点渲染成真正的 DOM
+    // 可以简单地认为 updateComponent 函数的作用就是：把渲染函数生成的虚拟DOM渲染成真正的DOM，其实在 vm._update 内部是通过虚拟DOM的补丁算法(patch)来完成的
     updateComponent = () => {
       vm._update(vm._render(), hydrating)
     }
@@ -194,8 +202,11 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+
+  // 正是因为 watcher 对表达式的求值，触发了数据属性的 get 拦截器函数，从而收集到了依赖，当数据变化时能够触发响应。
   new Watcher(vm, updateComponent, noop, {
     before () {
+      // 可以看到当数据变化之后，触发更新之前，如果 vm._isMounted 属性的值为真，则会调用,可以看watcher的构造函数
       if (vm._isMounted && !vm._isDestroyed) {
         callHook(vm, 'beforeUpdate')
       }

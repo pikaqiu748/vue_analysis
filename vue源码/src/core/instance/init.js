@@ -41,6 +41,7 @@ export function initMixin (Vue: Class<Component>) {
       // 1.将内置的全局组件和用户自己注册的全局组件，都会放到compnents选项上
       // 2.{component：{xxx}}，局部注册，执行编译器生成的render函数时做了合并，会合并到全局配置选项到组件局部配置项上
       // 3.这里的根组件
+      // core/util/options.js 文件，找到 mergeOptions 函数
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -49,6 +50,7 @@ export function initMixin (Vue: Class<Component>) {
     }
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
+      // core/instance/proxy.js 文件
       initProxy(vm)
     } else {
       vm._renderProxy = vm
@@ -56,7 +58,7 @@ export function initMixin (Vue: Class<Component>) {
     // expose real self
     vm._self = vm
     // 其实并不是created()等的初始化，而是$aprent,$root等初始化,即关系属性
-    initLifecycle(vm) 
+    initLifecycle(vm)
     // 初始化自定义事件
     // <comp @click="handleClick"></comp>
     // 组价上事件的舰艇其实是子组件自己在监听，也就是谁触发谁监听，即会被编译为
@@ -83,6 +85,8 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // 如果存在el选型，自动执行$mount
+    // $mount 的定义出现在两个地方，第一个地方是 platforms/web/runtime/index.js 文件，
+    // 第二个定义 $mount 函数的地方是 src/platforms/web/entry-runtime-with-compiler.js 文件，我们知道这个文件是完整版 Vue 的入口文件，在该文件中重新定义了 $mount 函数，但是保留了运行时 $mount 的功能，并在此基础上为 $mount 函数添加了编译模板的能力
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

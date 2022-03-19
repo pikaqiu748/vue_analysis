@@ -54,6 +54,7 @@ export function initState (vm: Component) {
   const opts = vm.$options
   // 对props配置做响应式处理
   // 代理props配置上的Key到vue实例，支持this.propKey的方式访问
+  // 注意到 props 选项的初始化要早于 data 选项的初始化，那么这是不是可以使用 props 初始化 data 数据的原因呢？答案是：“是的”。
   if (opts.props) initProps(vm, opts.props)
   // props中的key优先级高于methods中key，即methods中的key不嗯呢该和prop中的key重复。
   if (opts.methods) initMethods(vm, opts.methods)
@@ -64,7 +65,8 @@ export function initState (vm: Component) {
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
-  // 实例化一个watcher实例，并返回一个unwatch
+  // watch 选项仅仅判断 opts.watch 是否存在是不够的，还要判断 opts.watch 是不是原生的 watch 对象。
+  // 是因为在 Firefox 中原生提供了 Object.prototype.watch 函数，所以即使没有 opts.watch 选项，如果在火狐浏览器中依然能够通过原型链访问到原生的 Object.prototype.watch,但这其实不是我们想要的结果，所以这里加了一层判断避免把原生 watch 函数误认为是我们预期的 opts.watch 选项。之后才会调用 initWatch 函数初始化 opts.watch 选项。
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -374,6 +376,7 @@ export function stateMixin (Vue: Class<Component>) {
   dataDef.get = function () { return this._data }
   const propsDef = {}
   propsDef.get = function () { return this._props }
+  // 如果不是生产环境的话，就为 $data 和 $props 这两个属性设置一下 set，实际上就是提示你一下：别他娘的想修改我，老子无敌。
   if (process.env.NODE_ENV !== 'production') {
     dataDef.set = function () {
       warn(
@@ -386,8 +389,10 @@ export function stateMixin (Vue: Class<Component>) {
       warn(`$props is readonly.`, this)
     }
   }
+  // 使用 Object.defineProperty 在 Vue.prototype 上定义了两个属性，就是大家熟悉的：$data 和 $props，这两个属性的定义分别写在了 dataDef 以及 propsDef 这两个对象里
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
+
   // 据文件头部的引用关系可知 set 和 del 来自 src/core/observer/index.js 文件中定义的 set 函数和 del 函数。
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
