@@ -223,6 +223,7 @@ export function mountComponent (
   return vm
 }
 
+// 组件的更新是由 updateChildComponent 函数来完成的
 export function updateChildComponent (
   vm: Component,
   propsData: ?Object,
@@ -280,10 +281,23 @@ export function updateChildComponent (
     for (let i = 0; i < propKeys.length; i++) {
       const key = propKeys[i]
       const propOptions: any = vm.$options.props // wtf flow?
+      //       key：prop 的名字
+      // propsOptions：整个 props 选项对象
+      // propsData：整个 props 数据来源对象
+      // vm：组件实例对象
+      // 具体查看http://caibaojian.com/vue-design/art/9vue-state-init.html
       props[key] = validateProp(key, propOptions, propsData, vm)
     }
     toggleObserving(true)
     // keep a copy of raw propsData
+    // 可以看到 vm.$options.propsData 的更新是在调用 validateProp 之后进行的，所以当组件更新时如下代码中的 vm.$options.propsData 是上一次组件更新或创建时的数据,所以在props.js中的getPropDefaultValue函数中的判断：
+    // if (vm && vm.$options.propsData &&
+    //   vm.$options.propsData[key] === undefined &&
+    //   vm._props[key] !== undefined
+    // ) {
+    //   return vm._props[key]
+    // }
+    // 是为这个更新组件函数validateProp()时准备的，应为里面里调用getPropDefaultValue
     vm.$options.propsData = propsData
   }
 

@@ -165,11 +165,18 @@ function callActivatedHooks (queue) {
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
+  // 量 has 定义在 scheduler.js 文件头部，它是一个空对象：let has: { [key: number]: ?true } = {}
+  // 该 if 语句以及变量 has 的作用就是用来避免将相同的观察者重复入队的
   if (has[id] == null) {
+    // 在该 if 语句块内执行了真正的入队操作
     has[id] = true
+    // flushing 变量也定义在 scheduler.js 文件的头部，它的初始值是 false
+    // 当更新开始时会将 flushing 变量的值设置为 true，代表着此时正在执行更新，所以根据判断条件 if (!flushing) 可知只有当队列没有执行更新时才会简单地将观察者追加到队列的尾部，
     if (!flushing) {
+      // 其中 queue 常量也定义在 scheduler.js 文件的头部：const queue: Array<Watcher> = []
       queue.push(watcher)
     } else {
+      // 当变量 flushing 为真时，说明队列正在执行更新，这时如果有观察者入队则会执行 else 分支中的代码，这段代码的作用是为了保证观察者的执行顺序
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
@@ -179,13 +186,19 @@ export function queueWatcher (watcher: Watcher) {
       queue.splice(i + 1, 0, watcher)
     }
     // queue the flush
+    // 定义在 scheduler.js 文件头部，初始值为 false
     if (!waiting) {
+      // 在 if 语句块内先将 waiting 的值设置为 true，这意味着无论调用多少次 queueWatcher 函数，该 if 语句块的代码只会执行一次
       waiting = true
 
       if (process.env.NODE_ENV !== 'production' && !config.async) {
         flushSchedulerQueue()
         return
       }
+      // 调用 nextTick 并以 flushSchedulerQueue 函数作为参数，其中 flushSchedulerQueue 函数的作用之一就是用来将队列中的观察者统一执行更新的。其实最好理解的方式就是把 nextTick 看做 setTimeout(fn, 0)
+
+      // 我们完全可以使用 setTimeout 替换 nextTick，我们只需要执行一次 setTimeout 语句即可，waiting 变量就保证了 setTimeout 语句只会执行一次，这样 flushSchedulerQueue 函数将会在下一次事件循环开始时立即调用，但是既然可以使用 setTimeout 替换 nextTick 那么为什么不用 setTimeout 呢？原因就在于 setTimeout 并不是最优的选择，nextTick 的意义就是它会选择一条最优的解决方案，接下来我们就讨论一下 nextTick 是如何实现的。
+      // nextTick 函数来自于 src/core/util/next-tick.js 文件
       nextTick(flushSchedulerQueue)
     }
   }

@@ -68,9 +68,10 @@ export function initMixin (Vue: Class<Component>) {
     initRender(vm)
     // 执行那个beforeCreate，声明周期函数
     callHook(vm, 'beforeCreate')
-    // 初始化inject函数
+    // 初始化inject函数,可以发现 initInjections 函数在 initProvide 函数之前被调用，
     initInjections(vm) // resolve injections before data/props
-    // 响应式原理的核心，处理props,methods,computed,data,watch等选项,// 响应式原理入口在initstate中
+    // 响应式原理的核心，处理props,methods,computed,data,watch等选项,
+    // 响应式原理入口在initstate中
     initState(vm)
     // 处理provide选项
     initProvide(vm) // resolve provide after data/props

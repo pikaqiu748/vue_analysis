@@ -61,8 +61,9 @@ export function setCurrentRenderingInstance (vm: Component) {
 export function renderMixin (Vue: Class<Component>) {
   // install runtime convenience helpers
   installRenderHelpers(Vue.prototype)
-
+  // $nextTick 方法只接收一个回调函数作为参数，但在内部调用 nextTick 函数时，除了把回调函数 fn 透传之外，第二个参数是硬编码为当前组件实例对象 this。
   Vue.prototype.$nextTick = function (fn: Function) {
+    //  $nextTick 方法会返回一个 promise 实例对象。这些功能实际上都是由 nextTick 函数提供的
     return nextTick(fn, this)
   }
 

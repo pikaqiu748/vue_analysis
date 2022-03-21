@@ -14,7 +14,7 @@
     <p>{{printMsg}}</p>
     <p>{{test()}}</p>
     <p>{{test()}}</p>
-    <p>{{msg}}</p>
+    <p @click="change">{{msg}}</p>
     <comp> </comp>
   </div>
   <script src='../../dist/vue.js'></script>
@@ -26,8 +26,10 @@
 
     new Vue({
       el: '#app',
-      data: {
-        msg: 'hello,vue'
+      data () {
+        return {
+          msg: 'hello,vue'
+        }
       },
       computed: {
         printMsg: function () {
@@ -36,11 +38,15 @@
         }
       },
       methods: {
-        test() {
+        test () {
           console.log('---------methods')
           return `${this.msg} methods`
+        },
+        change () {
+          console.log('das')
+          this.msg = "xixixxi"
         }
-      }
+      },
     })
   </script>
 </body>
