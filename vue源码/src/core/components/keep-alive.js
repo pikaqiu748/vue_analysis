@@ -61,13 +61,14 @@ export default {
   abstract: true,
 
   props: {
-    include: patternTypes,
-    exclude: patternTypes,
-    max: [String, Number]
+    include: patternTypes,// 缓存白名单
+    exclude: patternTypes,  // 缓存黑名单
+    // props属性定义了keep-alive组件支持的全部参数。
+    max: [String, Number] // 缓存的组件
   },
 
   methods: {
-    cacheVNode() {
+    cacheVNode () {
       const { cache, keys, vnodeToCache, keyToCache } = this
       if (vnodeToCache) {
         const { tag, componentInstance, componentOptions } = vnodeToCache
@@ -78,6 +79,7 @@ export default {
         }
         keys.push(keyToCache)
         // prune oldest entry
+        //超过缓存数限制，将第一个删除
         if (this.max && keys.length > parseInt(this.max)) {
           pruneCacheEntry(cache, keys[0], keys, this._vnode)
         }
@@ -87,17 +89,19 @@ export default {
   },
 
   created () {
-    this.cache = Object.create(null)
-    this.keys = []
+    this.cache = Object.create(null)  // 缓存虚拟dom
+    this.keys = []   // 缓存的虚拟dom的键集合
   },
 
   destroyed () {
+    // 删除所有的缓存
     for (const key in this.cache) {
       pruneCacheEntry(this.cache, key, this.keys)
     }
   },
 
   mounted () {
+    // 实时监听黑白名单的变动
     this.cacheVNode()
     this.$watch('include', val => {
       pruneCache(this, name => matches(val, name))
@@ -113,8 +117,10 @@ export default {
 
   render () {
     const slot = this.$slots.default
+    // 找到第一个子组件对象
     const vnode: VNode = getFirstComponentChild(slot)
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
+    // 存在组件参数
     if (componentOptions) {
       // check pattern
       const name: ?string = getComponentName(componentOptions)
@@ -129,22 +135,23 @@ export default {
       }
 
       const { cache, keys } = this
+      // 定义组件的缓存key
       const key: ?string = vnode.key == null
         // same constructor may get registered as different local components
         // so cid alone is not enough (#3269)
         ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
         : vnode.key
-      if (cache[key]) {
+      if (cache[key]) {   // 已经缓存过该组件
         vnode.componentInstance = cache[key].componentInstance
         // make current key freshest
         remove(keys, key)
-        keys.push(key)
+        keys.push(key)  // 调整key排序,更新key的位置是实现LRU置换策略的关键
       } else {
         // delay setting the cache until update
         this.vnodeToCache = vnode
         this.keyToCache = key
       }
-
+      //渲染和执行被包裹组件的钩子函数需要用到
       vnode.data.keepAlive = true
     }
     return vnode || (slot && slot[0])

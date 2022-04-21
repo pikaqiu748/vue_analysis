@@ -195,6 +195,7 @@ export function mountComponent (
     // vm._update 函数的作用是把 vm._render 函数生成的虚拟节点渲染成真正的 DOM
     // 可以简单地认为 updateComponent 函数的作用就是：把渲染函数生成的虚拟DOM渲染成真正的DOM，其实在 vm._update 内部是通过虚拟DOM的补丁算法(patch)来完成的
     updateComponent = () => {
+      // Vue 的 _render 方法是实例的一个私有方法，它用来把实例渲染成一个虚拟 Node。它的定义在 src/core/instance/render.js 文件中：
       vm._update(vm._render(), hydrating)
     }
   }
@@ -204,6 +205,7 @@ export function mountComponent (
   // component's mounted hook), which relies on vm._watcher being already defined
 
   // 正是因为 watcher 对表达式的求值，触发了数据属性的 get 拦截器函数，从而收集到了依赖，当数据变化时能够触发响应。
+  // mountComponent 核心就是先实例化一个渲染Watcher，在它的回调函数中会调用 updateComponent 方法，在此方法中调用 vm._render 方法先生成虚拟 Node，最终调用 vm._update 更新 DOM。
   new Watcher(vm, updateComponent, noop, {
     before () {
       // 可以看到当数据变化之后，触发更新之前，如果 vm._isMounted 属性的值为真，则会调用,可以看watcher的构造函数

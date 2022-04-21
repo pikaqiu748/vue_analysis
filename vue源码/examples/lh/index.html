@@ -14,9 +14,10 @@
     <p>{{printMsg}}</p>
     <p>{{test()}}</p>
     <p>{{test()}}</p>
-    <p @click="change">{{msg}}</p>
-    <comp> </comp>
+    <button onclick="changeMsg">{{msg}}</button>
+    <!-- <comp> </comp> -->
   </div>
+
   <script src='../../dist/vue.js'></script>
   <script>
     console.log(window)
@@ -28,8 +29,16 @@
       el: '#app',
       data () {
         return {
-          msg: 'hello,vue'
+          msg: 'hello,vue',
+          arr: [1, 2, { name: 'li' }]
         }
+      },
+      props: {
+        prop1: {
+          type: String,
+          default: 'aaa'
+        },
+        prop2: Number,
       },
       computed: {
         printMsg: function () {
@@ -37,12 +46,17 @@
           return `${this.msg} computed`
         }
       },
+      watch: {
+        msg () {
+          console.log('msg改变')
+        }
+      },
       methods: {
         test () {
           console.log('---------methods')
           return `${this.msg} methods`
         },
-        change () {
+        changeMsg: function () {
           console.log('das')
           this.msg = "xixixxi"
         }

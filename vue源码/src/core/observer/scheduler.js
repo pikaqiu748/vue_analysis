@@ -70,29 +70,29 @@ if (inBrowser && !isIE) {
  */
 function flushSchedulerQueue () {
   currentFlushTimestamp = getNow()
+  // 置为true,表示watcher队列正在被刷新
   flushing = true
   let watcher, id
 
   // Sort queue before flush.
   // This ensures that:
-  // 1. Components are updated from parent to child. (because parent is always
-  //    created before the child)
-  // 2. A component's user watchers are run before its render watcher (because
-  //    user watchers are created before the render watcher)
-  // 3. If a component is destroyed during a parent component's watcher run,
-  //    its watchers can be skipped.
-  //  排序，先渲染父节点，再渲染子节点
-  // 这样可以避免不必要的子节点渲染，如：父节点中 v-if 为 false 的子节点，就不用渲染了
+  // 这些id是在创建watcher的时候，自增的
+  // 1. 组件从父级更新到子级。（因为父对象总是在子对象之前创建）
+  // 2. 组件的用户观察者函数在其渲染观察者函数之前运行（因为用户观察函数在渲染观察函数前创建）
+  // 3. 如果某个组件在父组件的观察程序运行期间被销毁，则可以跳过其观察程序。
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 不要缓存长度，因为在运行现有的观察程序时，可能会推送更多的观察者
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     if (watcher.before) {
+      // 如果有before钩子，则先执行
       watcher.before()
     }
     id = watcher.id
+    // 置为null,这样下次更新时，这个watcher，又可以进来
     has[id] = null
     watcher.run()
     // in dev build, check and stop circular updates.

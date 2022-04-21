@@ -34,6 +34,8 @@ extend(Vue.options.components, platformComponents)
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method
+// 原先原型上的 $mount 方法在 src/platform/web/runtime/index.js 中定义，之所以这么设计完全是为了复用，因为它是可以被 runtime only 版本的 Vue 直接使用的。
+// 第二个参数是和服务端渲染相关，在浏览器环境下我们不需要传第二个参数。
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -41,6 +43,7 @@ Vue.prototype.$mount = function (
   // 首先检测是否传递了 el 选项，如果传递了 el 选项则会接着判断 inBrowser 是否为真，即当前宿主环境是否是浏览器，如果在浏览器中则将 el 透传给 query 函数并用返回值重写 el 变量，否则 el 将被重写为 undefined。
   // query 函数来自 src/platforms/web/util/index.js 文件，用来根据给定的参数在 DOM 中查找对应的元素并返回。
   el = el && inBrowser ? query(el) : undefined
+  // $mount 方法实际上会去调用 mountComponent 方法,这个方法定义在 src/core/instance/lifecycle.js 文件中：
   return mountComponent(this, el, hydrating)
 }
 
