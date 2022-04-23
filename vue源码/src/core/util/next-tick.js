@@ -111,6 +111,8 @@ export function nextTick (cb?: Function, ctx?: Object) {
       }
       // 当 flushCallbacks 函数开始执行 callbacks 数组中的函数时，如果没有传递 cb 参数，则直接调用 _resolve 函数，我们知道这个函数就是返回的 Promise 实例对象的 resolve 函数。这样就实现了 Promise 方式的 $nextTick 方法。
     } else if (_resolve) {
+      // 这里的_resove会在nexttick没有回调函数的时候会被赋值为promise中的resolve函数
+      // 赋值代码在下面
       _resolve(ctx)
     }
   })
