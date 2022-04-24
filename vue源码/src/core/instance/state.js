@@ -256,7 +256,7 @@ function initComputed (vm: Component, computed: Object) {
         vm,
         getter || noop,
         noop,
-        // 懒执行，true
+        // 懒执行，true,下面是computed的默认配置选项
         computedWatcherOptions
       )
       // 首先创建计算属性观察者时所传递的第二个参数是 getter 函数，也就是说计算属性观察者的求值对象是 getter 函数。传递的第四个参数是 computedWatcherOptions 常量，它是一个对象，定义在 initComputed 函数的上方：const computedWatcherOptions = { computed: true },，通过如上这句代码可知在创建计算属性观察者对象时 computed 选项为 true，它的作用就是用来标识一个观察者对象是计算属性的观察者，计算属性的观察者与非计算属性的观察者的行为是不一样的。
@@ -267,6 +267,7 @@ function initComputed (vm: Component, computed: Object) {
     // at instantiation here.
     // 这段代码首先检查计算属性的名字是否已经存在于组件实例对象中，我们知道在初始化计算属性之前已经初始化了 props、methods 和 data 选项，并且这些选项数据都会定义在组件实例对象上，由于计算属性也需要定义在组件实例对象上，所以需要使用计算属性的名字检查组件实例对象上是否已经有了同名的定义，如果该名字已经定义在组件实例对象上，那么有可能是 data 数据或 props 数据或 methods 数据之一，对于 data 和 props 来讲他们是不允许被 computed 选项中的同名属性覆盖的，
     if (!(key in vm)) {
+      // userDef要么是computed对象中的get函数，要么是computed函数本身
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {

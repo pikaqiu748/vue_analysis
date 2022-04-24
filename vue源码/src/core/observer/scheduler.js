@@ -191,6 +191,9 @@ export function queueWatcher (watcher: Watcher) {
       // 在 if 语句块内先将 waiting 的值设置为 true，这意味着无论调用多少次 queueWatcher 函数，该 if 语句块的代码只会执行一次
       waiting = true
 
+      // 例如，在非生产环境下，如果计算属性设置为同步，即!async,则只需要将原本需要通过nexttick包装成为微任务的
+      //flushSchedulerQueue()直接执行即可
+
       if (process.env.NODE_ENV !== 'production' && !config.async) {
         flushSchedulerQueue()
         return

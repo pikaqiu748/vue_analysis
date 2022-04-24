@@ -66,7 +66,10 @@ export default class Watcher {
       // 用来标识当前观察者实例对象是 开发者定义的 还是 内部定义的,除了内部定义的观察者(如：渲染函数的观察者、计算属性的观察者等)之外，所有观察者都被认为是开发者定义的，这时 options.user 会自动被设置为 true。
       this.user = !!options.user
       this.lazy = !!options.lazy
-      // 用来告诉观察者当数据变化时是否同步求值并执行回调,默认情况下当数据变化时不会同步求值并执行回调，而是将需要重新求值并执行回调的观察者放到一个异步队列中，当所有数据的变化结束之后统一求值并执行回调
+      // 如果初始化lazy=true时（暗示是computed属性）
+      // 用来告诉观察者当数据变化时是否同步求值并执行回调,
+      // 默认情况下当数据变化时不会同步求值并执行回调，而是将需要重新求值并执行回调
+      // 的观察者放到一个异步队列中，当所有数据的变化结束之后统一求值并执行回调
       this.sync = !!options.sync
       // 可以理解为 Watcher 实例的钩子，当数据变化之后，触发更新之前，调用在创建渲染函数的观察者实例对象时传递的 before 选项。
       this.before = options.before
@@ -81,7 +84,7 @@ export default class Watcher {
     // 只有计算属性的观察者实例对象的 this.dirty 属性的值为true才会为真，因为计算属性是惰性求值。
     this.dirty = this.lazy // for lazy watchers
     // this.deps 与 this.depIds 为一组，this.newDeps 与 this.newDepIds 为一组。
-    // 其中 this.deps 与 this.newDeps 被初始化为空数组，而 this.depIds 与 this.newDepIds 被初始化为 Set 实例对象。
+    // 其中 this.deps 与 this.newDeps 被初始化为空数组，而 this.depIds 与 this.newDepIds 被初始化为 Set //实例对象。
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
@@ -91,6 +94,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
+      // this.getter 在Watcher构建函数中提到，本质就是用户传入的方法
       this.getter = expOrFn
     } else {
       // parsePath 函数定义在 src/core/util/lang.js 文件
@@ -124,6 +128,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
+      // this.getter.call(vm, vm)就会调用用户自己声明的方法，那么如果方法里面用到了 this.data中的值或者其他被用defineReactive包装过的对象，那么，访问this.data.或者其他被defineReactive包装过的属性，是不是就会访问被代理的该属性的get方法。
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

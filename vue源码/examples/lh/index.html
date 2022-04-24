@@ -1,68 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
+  <body>
+    <div id="app">
+      <p>{{printMsg}}</p>
+      <p>{{printMsg}}</p>
+      <p>{{test()}}</p>
+      <p>{{test()}}</p>
+      <button onclick="changeMsg">{{msg}}</button>
+      <!-- <comp> </comp> -->
+    </div>
 
-<body>
-  <div id="app">
-    <p>{{printMsg}}</p>
-    <p>{{printMsg}}</p>
-    <p>{{test()}}</p>
-    <p>{{test()}}</p>
-    <button onclick="changeMsg">{{msg}}</button>
-    <!-- <comp> </comp> -->
-  </div>
+    <script src="../../dist/vue.js"></script>
+    <script>
+      Vue.component("comp", {
+        template: "<div>i am comp</div>",
+      });
 
-  <script src='../../dist/vue.js'></script>
-  <script>
-    console.log(window)
-    Vue.component('comp', {
-      template: '<div>i am comp</div>'
-    })
-
-    new Vue({
-      el: '#app',
-      data () {
-        return {
-          msg: 'hello,vue',
-          arr: [1, 2, { name: 'li' }]
-        }
-      },
-      props: {
-        prop1: {
-          type: String,
-          default: 'aaa'
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            msg: "hello,vue",
+            arr: [1, 2, { name: "li" }],
+          };
         },
-        prop2: Number,
-      },
-      computed: {
-        printMsg: function () {
-          console.log("***************computed")
-          return `${this.msg} computed`
-        }
-      },
-      watch: {
-        msg () {
-          console.log('msg改变')
-        }
-      },
-      methods: {
-        test () {
-          console.log('---------methods')
-          return `${this.msg} methods`
+        props: {
+          prop1: {
+            type: String,
+            default: "aaa",
+          },
+          prop2: Number,
         },
-        changeMsg: function () {
-          console.log('das')
-          this.msg = "xixixxi"
-        }
-      },
-    })
-  </script>
-</body>
-
+        computed: {
+          printMsg: function () {
+            console.log("***************computed");
+            console.log(this);
+            return `${this.msg} computed`;
+          },
+        },
+        watch: {
+          msg() {
+            console.log("msg改变");
+          },
+        },
+        methods: {
+          test() {
+            console.log("---------methods");
+            return `${this.msg} methods`;
+          },
+          changeMsg() {
+            console.log("das");
+            this.msg = "xixixxi";
+          },
+        },
+      });
+    </script>
+  </body>
 </html>
