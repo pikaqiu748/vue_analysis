@@ -17,6 +17,8 @@ function flushCallbacks () {
   const copies = callbacks.slice(0)
   callbacks.length = 0
   for (let i = 0; i < copies.length; i++) {
+    // 当函数调用栈为空时，执行微任务flushCallbacks，从而执行原来保存的所有callback，即flushSchedulerQueue，这个queue中的元素是watcher实例，调用watcher的run方法，进而调用get方法，触发重新渲染update(vm.render())。
+    // callbacks里面的cb是flushSchedulerQueue，flushSchedulerQueue里面是watcher实例
     copies[i]()
   }
 }

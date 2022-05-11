@@ -176,7 +176,9 @@ export function queueWatcher (watcher: Watcher) {
       // 其中 queue 常量也定义在 scheduler.js 文件的头部：const queue: Array<Watcher> = []
       queue.push(watcher)
     } else {
-      // 当变量 flushing 为真时，说明队列正在执行更新，这时如果有观察者入队则会执行 else 分支中的代码，这段代码的作用是为了保证观察者的执行顺序
+      // 当变量 flushing 为真时，说明队列正在执行更新，这时如果有观察者入队则会执行 else 分支中的代码，这段代码的作用是为了保证观察者的执行顺序.
+      // 判断 flushing 标识，处理 Watcher 渲染时，可能产生的新 Watcher。
+      // 如：触发了 v-if 的条件，新增的 Watcher 渲染。
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
