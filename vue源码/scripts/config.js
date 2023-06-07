@@ -22,10 +22,22 @@ const weexFactoryPlugin = {
 
 const aliases = require('./alias')
 const resolve = (p) => {
+  // 例如，执行run dev时，会得到builds对象中的web-full-dev键值对应的对象，
+  // 然后入口文件调用该文件，此时传入参数为'web/entry-runtime-with-compiler.js'
+  // 经过下面一句可以得到base=“web"
   const base = p.split('/')[0]
+  // 根据“web”字段，执行对应的函数，此时为alias文件中的resolve('src/platforms/web')，
+  // 该函数返回return path.resolve(__dirname,'../',p='src/platforms/web')
+  // 等于"src/platforms/web"=aliases[base]
+  // p.slice(base.length + 1得到“/entry-runtime-with-compiler.js”
+  // 将以上两个拼接，得到run dev环境下的编译器
   if (aliases[base]) {
     return path.resolve(aliases[base], p.slice(base.length + 1))
   } else {
+    // resolve(__dirname)获取当前文件所属目录的绝对路径
+    // 相当于先得到路径：/Users/lihui/Desktop/vue-analysis/vue源码/scripts
+    // 然后执行：cd ../ 回到/Users/lihui/Desktop/vue-analysis/vue源码
+    // 参数p表示vue源码目录下的一个文件夹名字
     return path.resolve(__dirname, '../', p)
   }
 }
@@ -117,6 +129,7 @@ const builds = {
   // Runtime+compiler development build (Browser)
   // 入口文件为 web/entry-runtime-with-compiler.js，最终输出 dist/vue.js，
   'web-full-dev': {
+    // 该环境下的入口文件
     entry: resolve('web/entry-runtime-with-compiler.js'),
     dest: resolve('dist/vue.js'),
     format: 'umd',
@@ -218,6 +231,7 @@ function genConfig(name) {
     // 用来声明某些依赖是再外部引用的，这些依赖不会打包进来。
     // 例如在打包的代码中，引入了jQuery，但是上下文中有全局的jQuery，
     //  这时打包的过程就可以使用该字段来排除打包jQuery。
+    // 即告诉rollup什么不需要打包，而是作为外部依赖使用
     external: opts.external,
     // rollup使用的插件
     plugins: [flow(), alias(Object.assign({}, aliases, opts.alias))].concat(opts.plugins || []),
@@ -245,7 +259,6 @@ function genConfig(name) {
   // 这样一来，你甚至可以使用其他框架驱动 Weex，打造三端一致的 native 应用。
   // 就是说 Weex 是一个壳，定义了一些 协议，可以使用其他 framework 来实现它。
   // Web 的开发体验，native 的体验。
-
   const vars = {
     __WEEX__: !!opts.weex,
     __WEEX_VERSION__: weexVersion,
@@ -280,7 +293,9 @@ function genConfig(name) {
     config.plugins.push(buble())
   }
 
+  // getConfig函数传入的参数，不可访问
   Object.defineProperty(config, '_name', {
+    // 为false时，for in不可遍历
     enumerable: false,
     value: name,
   })
@@ -289,6 +304,7 @@ function genConfig(name) {
 }
 
 if (process.env.TARGET) {
+  // run dev时，指定的scripts/config，会得到该函数返回的配置信息
   module.exports = genConfig(process.env.TARGET)
 } else {
   exports.getBuild = genConfig

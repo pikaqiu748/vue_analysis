@@ -101,4 +101,5 @@ function getOuterHTML (el: Element): string {
 
 Vue.compile = compileToFunctions
 
+// 找到vue源码/src/core/instance/index.js中定义的Vue，会发现是一个函数
 export default Vue
