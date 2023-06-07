@@ -19,7 +19,7 @@
       }
     </style>
     <!-- Delete ".min" for console warnings in development -->
-    <script src="../../dist/vue.min.js"></script>
+    <script src="../../dist/vue.js"></script>
   </head>
   <body>
     <div id="demo">
@@ -43,6 +43,8 @@
       </ul>
     </div>
     <script src="mock.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js">
+      console.log('target',process.env.TARGET);
+    </script>
   </body>
 </html>
