@@ -4,9 +4,14 @@ import config from 'core/config'
 import { warn, cached } from 'core/util/index'
 import { mark, measure } from 'core/util/perf'
 // 这说明：这个文件并不是 Vue 构造函数的“出生地”，这个文件中的 Vue 是从 ./runtime/index 导入进来的，于是我们就打开当前目录的 runtime 目录下的 index.js 看一下，你同样能够发现这样一句话：
+// 这个也是entry-runtime.js中的Vue,即run-time
 import Vue from './runtime/index'
 import { query } from './util/index'
+// 引入编译器compiler,compileToFunctions作用是将模板字符串template编译成渲染函数render
 import { compileToFunctions } from './compiler/index'
+// 如果 shouldDecodeNewlines 为 true，意味着 Vue 在编译模板的时候，要对属性值中的换行符或制表符做兼容处理。
+// 而shouldDecodeNewlinesForHref为true 意味着Vue在编译模板的时候，
+// 要对a标签的 href 属性值中的换行符或制表符做兼容处理。
 import { shouldDecodeNewlines, shouldDecodeNewlinesForHref } from './util/compat'
 
 const idToTemplate = cached(id => {

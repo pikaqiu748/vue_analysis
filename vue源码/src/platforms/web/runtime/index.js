@@ -78,4 +78,5 @@ if (inBrowser) {
   }, 0)
 }
 
+// 这里导出的就是 /web/entry-runtime.js中的Vue
 export default Vue

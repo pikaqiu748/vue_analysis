@@ -125,6 +125,7 @@ export const isBuiltInTag = makeMap('slot,component', true)
 /**
  * Check if an attribute is a reserved attribute.
  */
+// vue自定义的标签
 export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 
 /**
