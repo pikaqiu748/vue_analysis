@@ -2,6 +2,7 @@
 
 import { toArray } from '../util/index'
 
+// 在index.js文件中引入了,作用是注册插件
 export function initUse (Vue: GlobalAPI) {
   Vue.use = function (plugin: Function | Object) {
     const installedPlugins = (this._installedPlugins || (this._installedPlugins = []))
